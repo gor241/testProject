@@ -1,49 +1,39 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
-import EntityCreationComponent from './components/EntityCreationComponent';
-import DataDisplayComponent from './components/DataDisplayComponent';
 import { Context } from './context/context';
-import RowCreationComponent from './components/RowCreationComponent';
-import RowUpdateComponent from './components/RowUpdateComponent';
-import RowDeleteComponent from './components/RowDeleteComponent';
 import { Box } from '@mui/material';
 import Header from './components/Header';
 import NavLink from './components/NavLink';
+import TableComponent from './components/TableComponent';
+import { ItemComponentProps } from '../src/components/TableComponent';
 
 function App() {
-    const [entityId, setEntityId] = useState<string>('');
+    const entityId = String(114932);
+
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    const [isIdLoaded, setIsIdLoaded] = useState<boolean>(false);
+    const [rowData, setRowData] = useState<ItemComponentProps[]>([]);
+
+    const handleSetState = (array:ItemComponentProps[])=>{
+        setRowData(array)
+    }
 
     useEffect(() => {
-        // Проверяем, был ли уже загружен ID
-        if (!isIdLoaded) {
-            const createEntity = async () => {
-                try {
-                    const response = await fetch(
-                        'http://185.244.172.108:8081/v1/outlay-rows/entity/create',
-                        {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                        }
-                    );
-                    if (!response.ok) {
-                        throw new Error('Failed to create entity');
-                    }
-                    const data = await response.json();
-                    const createdEntityId = data.id;
-                    // Устанавливаем ID в состояние и помечаем, что он загружен
-                    setEntityId(createdEntityId);
-                    setIsIdLoaded(true);
-                } catch (error) {
-                    console.error('Error creating entity:', error);
+        const fetchData = async () => {
+            try {
+                const response = await fetch(
+                    `http://185.244.172.108:8081/v1/outlay-rows/entity/${entityId}/row/list`
+                );
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
                 }
-            };
-            createEntity();
-        }
-    }, [isIdLoaded]);
+                const data = await response.json();
+                setRowData(data); // Установка данных в локальное состояние компонента
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+        fetchData();
+    }, []);
 
     const handleToggleEdit = () => {
         setIsEditing(!isEditing);
@@ -68,20 +58,14 @@ function App() {
                 </Box>
                 <Box sx={{ flex: '1 1 100%' }}>
                     <Context.Provider
-                        value={{ setEntityId, entityId, handleToggleEdit }}
+                        value={{
+                            entityId,
+                            handleToggleEdit,
+                            handleSetState,
+                            rowData,
+                        }}
                     >
-                        {/* <DataDisplayComponent /> */}
-                        {/* Получение данных */}
-                        {/* <RowCreationComponent parentId={null} /> */}
-                        {/* Создание готвой строки */}
-                        {/* <RowUpdateComponent
-                            rowId="exampleRowId"
-                            initialName="Initial Name"
-                            initialValue={42}
-                        /> */}
-                        {/* Обновление строки  rowId и initialName брать из json*/}
-                        {/* <RowDeleteComponent rowId="exampleRowId" /> */}
-                        {/* Удаление строки */}
+                        <TableComponent />
                     </Context.Provider>
                 </Box>
             </Box>

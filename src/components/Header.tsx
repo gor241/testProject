@@ -31,7 +31,7 @@ const Header = () => {
                 </Box>
                 <Box
                     sx={{
-                        borderBottom: '1px solid white',
+                        borderBottom: '2px solid white',
                         padding: '8px 0px',
                     }}
                 >
