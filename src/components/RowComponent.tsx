@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux';
 import { deleteRow } from '../RTK/redusers/firstReduser';
 
 interface ItemMenuComponentProps extends Partial<ItemComponentProps> {
+    isEddit?: boolean;
     idNum: number;
     onAddRow: (obj: ItemComponentProps) => void;
     onDeleteRow: (rowId: string) => void;
@@ -27,6 +28,7 @@ const AnimatedIconButton = styled(IconButton)(({ theme }) => ({
 }));
 
 const RowComponent: React.FC<ItemMenuComponentProps> = ({
+    isEddit = false,
     idNum,
     equipmentCosts,
     estimatedProfit,
@@ -37,7 +39,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
     onDeleteRow,
     onUpdateRow,
 }) => {
-    const [isEditing, setIsEditing] = useState(false);
+    const [isEditing, setIsEditing] = useState(isEddit);
     const [isHovered, setIsHovered] = useState(false);
     const [editedData, setEditedData] = useState<ItemComponentProps>({
         equipmentCosts: equipmentCosts || 0,

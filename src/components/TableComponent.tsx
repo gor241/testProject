@@ -165,6 +165,7 @@ const TableComponent = () => {
                         onAddRow={handleAddRow}
                         onDeleteRow={handleDeleteRow}
                         onUpdateRow={handleUpdateRow}
+                        isEddit={row.isEddit ? row.isEddit : false}
                     />
                 ))}
             </TableBody>

@@ -15,6 +15,7 @@ interface Row {
     overheads: number;
     estimatedProfit: number;
     child?: any;
+    isEddit?: boolean;
 }
 
 interface RowsState {
@@ -34,7 +35,9 @@ const firstSlice = createSlice({
             state.rows = action.payload;
         },
         addRow: (state, action: PayloadAction<Row>) => {
-            state.rows.push(action.payload);
+            state.rows
+                .find((row) => row.id === action.payload.id)
+                ?.child.push({ ...action.payload, isEddit: true });
         },
         updateRow: (
             state,
