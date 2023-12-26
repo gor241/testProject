@@ -7,9 +7,11 @@ import DeleteIcon from '../img/iconDel.svg';
 import { Box, TextField, Typography } from '@mui/material';
 import { styled } from '@mui/system';
 import { ItemComponentProps } from './TableComponent';
-import { Context } from '../context/context';
+import { useDispatch } from 'react-redux';
+import { deleteRow } from '../RTK/redusers/firstReduser';
 
 interface ItemMenuComponentProps extends Partial<ItemComponentProps> {
+    idNum: number;
     onAddRow: (obj: ItemComponentProps) => void;
     onDeleteRow: (rowId: string) => void;
     onUpdateRow: (rowId: string, obj: ItemComponentProps) => void;
@@ -25,6 +27,7 @@ const AnimatedIconButton = styled(IconButton)(({ theme }) => ({
 }));
 
 const RowComponent: React.FC<ItemMenuComponentProps> = ({
+    idNum,
     equipmentCosts,
     estimatedProfit,
     overheads,
@@ -34,60 +37,61 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
     onDeleteRow,
     onUpdateRow,
 }) => {
-    const { rowData } = useContext(Context);
     const [isEditing, setIsEditing] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
-    const [isAdding, setIsAdding] = useState(false);
-    const [editedData, setEditedData] = useState({
-        equipmentCosts: 0,
-        estimatedProfit: 0,
+    const [editedData, setEditedData] = useState<ItemComponentProps>({
+        equipmentCosts: equipmentCosts || 0,
+        id: 0,
+        total: 0,
+        estimatedProfit: estimatedProfit || 0,
         machineOperatorSalary: 0,
         mainCosts: 0,
         materials: 0,
         mimExploitation: 0,
-        overheads: 0,
-        rowName: 'string',
-        salary: 0,
+        overheads: overheads || 0,
+        rowName: rowName || '',
+        salary: salary || 0,
         supportCosts: 0,
     });
 
+    // Установка editedData при изменении свойств строки
+    useEffect(() => {
+        setEditedData((prevData) => ({
+            ...prevData,
+            equipmentCosts: equipmentCosts || 0,
+            estimatedProfit: estimatedProfit || 0,
+            overheads: overheads || 0,
+            rowName: rowName || '',
+            salary: salary || 0,
+        }));
+    }, [equipmentCosts, estimatedProfit, overheads, rowName, salary]);
+    const dispatch = useDispatch();
+
     const handleAddRow = () => {
-        onAddRow({ ...editedData });
+        onAddRow({
+            equipmentCosts: 0,
+            id: 0,
+            total: 0,
+            estimatedProfit: 0,
+            machineOperatorSalary: 0,
+            mainCosts: 0,
+            materials: 0,
+            mimExploitation: 0,
+            overheads: 0,
+            rowName: 'Новая строка', // Установите значение по умолчанию
+            salary: 0,
+            supportCosts: 0,
+        });
     };
 
     const handleDeleteRow = () => {
-        const id = rowData.find(
-            (el: ItemComponentProps) => el.rowName === editedData.rowName
-        )?.id;
-        if (id) {
-            onDeleteRow(id);
-        } else {
-            console.error('ID not found for deletion');
-        }
+        onDeleteRow(String(idNum));
+        dispatch(deleteRow(idNum));
     };
 
     const handleDoubleClick = () => {
         setIsEditing(true);
     };
-
-    useEffect(() => {
-        const handleKeyDown = (e: any) => {
-            const id = rowData.find(
-                (el: ItemComponentProps) => el.rowName === editedData.rowName
-            )?.id;
-            if (e.key === 'Enter' && id) {
-                // Отправить данные на сервер
-                setIsEditing(false);
-                onUpdateRow(id, { ...editedData });
-            }
-        };
-        // Добавляем обработчик события на уровне документа
-        document.addEventListener('keydown', handleKeyDown);
-        // Убираем обработчик при размонтировании компонента
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, []);
 
     const handleInputChange =
         (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,6 +100,14 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                 [field]: event.target.value,
             }));
         };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            // Отправить данные на сервер
+            onUpdateRow(String(idNum), { ...editedData });
+            setIsEditing(false);
+        }
+    };
 
     return (
         <TableRow>
@@ -157,6 +169,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                     <TextField
                         value={editedData.rowName}
                         onChange={handleInputChange('rowName')}
+                        onKeyDown={handleKeyDown}
                         size="small"
                         InputProps={{
                             style: {
@@ -184,6 +197,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                     <TextField
                         value={editedData.equipmentCosts}
                         onChange={handleInputChange('equipmentCosts')}
+                        onKeyDown={handleKeyDown}
                         size="small"
                         InputProps={{
                             style: {
@@ -213,6 +227,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                     <TextField
                         value={editedData.salary}
                         onChange={handleInputChange('salary')}
+                        onKeyDown={handleKeyDown}
                         size="small"
                         InputProps={{
                             style: {
@@ -240,6 +255,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                     <TextField
                         value={editedData.overheads}
                         onChange={handleInputChange('overheads')}
+                        onKeyDown={handleKeyDown}
                         size="small"
                         InputProps={{
                             style: {
@@ -267,6 +283,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                     <TextField
                         value={editedData.estimatedProfit}
                         onChange={handleInputChange('estimatedProfit')}
+                        onKeyDown={handleKeyDown}
                         InputProps={{
                             style: {
                                 color: '#71717A',

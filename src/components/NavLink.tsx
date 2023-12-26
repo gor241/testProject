@@ -1,7 +1,8 @@
 import { Box } from '@mui/material';
 import ItemMenu from './ItemMenu';
+import React from 'react';
 
-const NavLink = () => {
+const NavLink = React.memo(() => {
     return (
         <Box
             sx={{
@@ -25,6 +26,6 @@ const NavLink = () => {
             <ItemMenu text="Контрагенты" />
         </Box>
     );
-};
+});
 
 export default NavLink;

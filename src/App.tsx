@@ -1,43 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect} from 'react';
 import './App.css';
 import { Context } from './context/context';
 import { Box } from '@mui/material';
 import Header from './components/Header';
 import NavLink from './components/NavLink';
 import TableComponent from './components/TableComponent';
-import { ItemComponentProps } from '../src/components/TableComponent';
+import { useDispatch } from 'react-redux';
+import { setRows } from './RTK/redusers/firstReduser';
 
 function App() {
     const entityId = String(114932);
-
-    const [isEditing, setIsEditing] = useState<boolean>(false);
-    const [rowData, setRowData] = useState<ItemComponentProps[]>([]);
-
-    const handleSetState = (array:ItemComponentProps[])=>{
-        setRowData(array)
-    }
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch(
-                    `http://185.244.172.108:8081/v1/outlay-rows/entity/${entityId}/row/list`
-                );
-                if (!response.ok) {
-                    throw new Error('Failed to fetch data');
-                }
-                const data = await response.json();
-                setRowData(data); // Установка данных в локальное состояние компонента
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
-        fetchData();
-    }, []);
-
-    const handleToggleEdit = () => {
-        setIsEditing(!isEditing);
-    };
+        fetch(
+            `http://185.244.172.108:8081/v1/outlay-rows/entity/${entityId}/row/list`
+        )
+            .then((response) => response.json())
+            .then((data) => dispatch(setRows(data)))
+            .catch((error) => console.error('Error fetching rows:', error));
+    }, [dispatch]);
 
     return (
         <Box
@@ -60,9 +42,6 @@ function App() {
                     <Context.Provider
                         value={{
                             entityId,
-                            handleToggleEdit,
-                            handleSetState,
-                            rowData,
                         }}
                     >
                         <TableComponent />

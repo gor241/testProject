@@ -2,8 +2,9 @@ import { Box, Typography } from '@mui/material';
 import appIcon from '../img/iconApp.svg';
 import arrowIcon from '../img/iconArrow.svg';
 import whiteIcon from '../img/iconWhite.svg';
+import React from 'react';
 
-const Header = () => {
+const Header = React.memo(() => {
     return (
         <Box
             sx={{
@@ -103,6 +104,6 @@ const Header = () => {
             </Box>
         </Box>
     );
-};
+});
 
 export default Header;
