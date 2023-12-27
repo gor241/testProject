@@ -8,12 +8,15 @@ import { Box, TextField, Typography } from '@mui/material';
 import { styled } from '@mui/system';
 import { ItemComponentProps } from './TableComponent';
 import { useDispatch } from 'react-redux';
-import { deleteRow } from '../RTK/redusers/firstReduser';
+import { deleteRow, toggleIsEdit } from '../RTK/redusers/firstReduser';
 
 interface ItemMenuComponentProps extends Partial<ItemComponentProps> {
+    child: [] | ItemComponentProps[];
+    classEl: string;
     isEddit?: boolean;
+    parentId: number;
     idNum: number;
-    onAddRow: (obj: ItemComponentProps) => void;
+    onAddRow: (obj: ItemComponentProps, parentId: number) => void;
     onDeleteRow: (rowId: string) => void;
     onUpdateRow: (rowId: string, obj: ItemComponentProps) => void;
 }
@@ -28,8 +31,10 @@ const AnimatedIconButton = styled(IconButton)(({ theme }) => ({
 }));
 
 const RowComponent: React.FC<ItemMenuComponentProps> = ({
+    parentId,
     isEddit = false,
     idNum,
+    classEl,
     equipmentCosts,
     estimatedProfit,
     overheads,
@@ -39,7 +44,8 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
     onDeleteRow,
     onUpdateRow,
 }) => {
-    const [isEditing, setIsEditing] = useState(isEddit);
+    const dispatch = useDispatch();
+
     const [isHovered, setIsHovered] = useState(false);
     const [editedData, setEditedData] = useState<ItemComponentProps>({
         equipmentCosts: equipmentCosts || 0,
@@ -54,6 +60,8 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
         rowName: rowName || '',
         salary: salary || 0,
         supportCosts: 0,
+        child: [],
+        parentId: parentId || 0,
     });
 
     // Установка editedData при изменении свойств строки
@@ -67,23 +75,27 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
             salary: salary || 0,
         }));
     }, [equipmentCosts, estimatedProfit, overheads, rowName, salary]);
-    const dispatch = useDispatch();
 
     const handleAddRow = () => {
-        onAddRow({
-            equipmentCosts: 0,
-            id: 0,
-            total: 0,
-            estimatedProfit: 0,
-            machineOperatorSalary: 0,
-            mainCosts: 0,
-            materials: 0,
-            mimExploitation: 0,
-            overheads: 0,
-            rowName: 'Новая строка', // Установите значение по умолчанию
-            salary: 0,
-            supportCosts: 0,
-        });
+        onAddRow(
+            {
+                equipmentCosts: 0,
+                id: 0,
+                total: 0,
+                estimatedProfit: 0,
+                machineOperatorSalary: 0,
+                mainCosts: 0,
+                materials: 0,
+                mimExploitation: 0,
+                overheads: 0,
+                rowName: 'Новая строка', // Установите значение по умолчанию
+                salary: 0,
+                supportCosts: 0,
+                parentId: idNum,
+                child: [],
+            },
+            idNum
+        );
     };
 
     const handleDeleteRow = () => {
@@ -92,7 +104,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
     };
 
     const handleDoubleClick = () => {
-        setIsEditing(true);
+        dispatch(toggleIsEdit(idNum));
     };
 
     const handleInputChange =
@@ -105,11 +117,22 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
+            console.log('key down', e.key);
             // Отправить данные на сервер
             onUpdateRow(String(idNum), { ...editedData });
-            setIsEditing(false);
+            dispatch(toggleIsEdit(idNum));
         }
     };
+    // const cls = () => {
+    //     let res = '';
+    //     if (parentId) {
+    //         res += 'child';
+    //     }
+    //     if (child.length > 0) {
+    //         res += 'parent';
+    //     }
+    //     return '';
+    // };
 
     return (
         <TableRow>
@@ -121,6 +144,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                     width: '110px',
                     height: '40px',
                 }}
+                className={classEl}
             >
                 <Box
                     sx={{
@@ -167,7 +191,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                     height: '40px',
                 }}
             >
-                {isEditing ? (
+                {isEddit ? (
                     <TextField
                         value={editedData.rowName}
                         onChange={handleInputChange('rowName')}
@@ -195,7 +219,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                     height: '40px',
                 }}
             >
-                {isEditing ? (
+                {isEddit ? (
                     <TextField
                         value={editedData.equipmentCosts}
                         onChange={handleInputChange('equipmentCosts')}
@@ -225,7 +249,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                     height: '40px',
                 }}
             >
-                {isEditing ? (
+                {isEddit ? (
                     <TextField
                         value={editedData.salary}
                         onChange={handleInputChange('salary')}
@@ -253,7 +277,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                     height: '40px',
                 }}
             >
-                {isEditing ? (
+                {isEddit ? (
                     <TextField
                         value={editedData.overheads}
                         onChange={handleInputChange('overheads')}
@@ -281,7 +305,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                     height: '40px',
                 }}
             >
-                {isEditing ? (
+                {isEddit ? (
                     <TextField
                         value={editedData.estimatedProfit}
                         onChange={handleInputChange('estimatedProfit')}

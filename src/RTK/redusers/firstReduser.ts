@@ -16,6 +16,8 @@ interface Row {
     estimatedProfit: number;
     child?: any;
     isEddit?: boolean;
+    parentId?: number;
+    classEl: string;
 }
 
 interface RowsState {
@@ -26,18 +28,41 @@ const initialState: RowsState = {
     rows: [],
 };
 
+interface onAddRow {
+    parentId: number;
+    row: Row;
+}
+
 // Создайте слайс
 const firstSlice = createSlice({
-    name: 'firstSlice', // Имя слайса
+    name: 'firstSlice',
     initialState,
     reducers: {
         setRows: (state, action: PayloadAction<Row[]>) => {
             state.rows = action.payload;
         },
-        addRow: (state, action: PayloadAction<Row>) => {
-            state.rows
-                .find((row) => row.id === action.payload.id)
-                ?.child.push({ ...action.payload, isEddit: true });
+        addRow: (state, action: PayloadAction<onAddRow>) => {
+            const { row, parentId } = action.payload;
+            const parentRow = state.rows.find((row) => row.id === parentId);
+            if (parentRow) {
+                if (!parentRow.child) {
+                    parentRow.child = [];
+                }
+                parentRow.child.push({
+                    ...row,
+                    parentId,
+                    isEddit: true,
+                    child: [],
+                    classEl: '',
+                });
+            } else {
+                state.rows.push({
+                    ...row,
+                    isEddit: true,
+                    child: [],
+                    classEl: '',
+                });
+            }
         },
         updateRow: (
             state,
@@ -48,15 +73,24 @@ const firstSlice = createSlice({
             );
             if (index !== -1) {
                 state.rows[index] = action.payload.updatedRow;
+                state.rows[index].isEddit = false;
             }
         },
         deleteRow: (state, action: PayloadAction<number>) => {
             state.rows = state.rows.filter((row) => row.id !== action.payload);
         },
+        toggleIsEdit: (state, action: PayloadAction<number>) => {
+            const { payload: id } = action;
+            const targetRow = state.rows.find((row) => row.id === id);
+            if (targetRow) {
+                targetRow.isEddit = !targetRow.isEddit;
+            }
+        },
     },
 });
 
-export const { setRows, addRow, updateRow, deleteRow } = firstSlice.actions;
+export const { setRows, addRow, updateRow, deleteRow, toggleIsEdit } =
+    firstSlice.actions;
 export default firstSlice.reducer;
 
 export const selectRows = (state: RootState) => state.firstSlice.rows;
