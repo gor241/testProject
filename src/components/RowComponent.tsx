@@ -8,7 +8,12 @@ import { Box, TextField, Typography } from '@mui/material';
 import { styled } from '@mui/system';
 import { ItemComponentProps } from './TableComponent';
 import { useDispatch } from 'react-redux';
-import { deleteRow, toggleIsEdit } from '../RTK/redusers/firstReduser';
+import {
+    addRowAsync,
+    deleteRowAsync,
+    toggleIsEdit,
+    updateRowAsync,
+} from '../RTK/redusers/firstReduser';
 
 interface ItemMenuComponentProps extends Partial<ItemComponentProps> {
     child: [] | ItemComponentProps[];
@@ -40,9 +45,6 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
     overheads,
     rowName,
     salary,
-    onAddRow,
-    onDeleteRow,
-    onUpdateRow,
 }) => {
     const dispatch = useDispatch();
 
@@ -77,8 +79,9 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
     }, [equipmentCosts, estimatedProfit, overheads, rowName, salary]);
 
     const handleAddRow = () => {
-        onAddRow(
-            {
+        addRowAsync({
+            parentId: idNum,
+            row: {
                 equipmentCosts: 0,
                 id: 0,
                 total: 0,
@@ -94,13 +97,10 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                 parentId: idNum,
                 child: [],
             },
-            idNum
-        );
+        });
     };
-
     const handleDeleteRow = () => {
-        onDeleteRow(String(idNum));
-        dispatch(deleteRow(idNum));
+        deleteRowAsync(idNum);
     };
 
     const handleDoubleClick = () => {
@@ -119,7 +119,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
         if (e.key === 'Enter') {
             console.log('key down', e.key);
             // Отправить данные на сервер
-            onUpdateRow(String(idNum), { ...editedData });
+            updateRowAsync({ rowId: idNum, updatedRow: { ...editedData } });
             dispatch(toggleIsEdit(idNum));
         }
     };
