@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import api from '../../api/api';
 
-interface Row {
+export interface Row {
     id: number;
     rowName: string;
     total: number;
@@ -15,9 +15,9 @@ interface Row {
     equipmentCosts: number;
     overheads: number;
     estimatedProfit: number;
-    child?: any;
+    child: Row[];
     isEddit?: boolean;
-    parentId?: number;
+    parentId: number | null;
     classEl?: string;
 }
 
@@ -75,47 +75,55 @@ const firstSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(deleteRowAsync.fulfilled, (state, action) => {
-                // Обработка успешного удаления строки
-                const deletedRows = action.payload;
-                state.rows = state.rows.filter(
-                    (row) =>
-                        !deletedRows.some(
-                            (deletedRow: Row) => deletedRow.id === row.id
-                        )
-                );
-            })
-            .addCase(addRowAsync.fulfilled, (state, action) => {
-                // Обработка успешного добавления строки
-                const { parentId, row } = action.payload;
-                const parentRow = state.rows.find((r) => r.id === parentId);
-                if (parentRow) {
-                    if (!parentRow.child) {
-                        parentRow.child = [];
+            .addCase(
+                deleteRowAsync.fulfilled,
+                (state: RowsState, action: PayloadAction<number[]>) => {
+                    const deletedRows = action.payload;
+                    state.rows = state.rows.filter(
+                        (row) => !deletedRows.includes(row.id)
+                    );
+                }
+            )
+            .addCase(
+                addRowAsync.fulfilled,
+                (state: RowsState, action: PayloadAction<AddRowPayload>) => {
+                    const { parentId, row } = action.payload;
+                    const parentRow = state.rows.find((r) => r.id === parentId);
+                    if (parentRow) {
+                        if (!parentRow.child) {
+                            parentRow.child = [];
+                        }
+                        parentRow.child.push({
+                            ...row,
+                            parentId,
+                            isEddit: true,
+                            child: [],
+                        });
+                    } else {
+                        state.rows.push({
+                            ...row,
+                            isEddit: true,
+                            child: [],
+                        });
                     }
-                    parentRow.child.push({
-                        ...row,
-                        parentId,
-                        isEddit: true,
-                        child: [],
-                    });
-                } else {
-                    state.rows.push({
-                        ...row,
-                        isEddit: true,
-                        child: [],
-                    });
                 }
-            })
-            .addCase(updateRowAsync.fulfilled, (state, action) => {
-                // Обработка успешного обновления строки
-                const { rowId, updatedRow } = action.payload;
-                const index = state.rows.findIndex((row) => row.id === rowId);
-                if (index !== -1) {
-                    state.rows[index] = updatedRow;
-                    state.rows[index].isEddit = false;
+            )
+            .addCase(
+                updateRowAsync.fulfilled,
+                (
+                    state: RowsState,
+                    action: PayloadAction<{ rowId: number; updatedRow: Row }>
+                ) => {
+                    const { rowId, updatedRow } = action.payload;
+                    const index = state.rows.findIndex(
+                        (row) => row.id === rowId
+                    );
+                    if (index !== -1) {
+                        state.rows[index] = updatedRow;
+                        state.rows[index].isEddit = false;
+                    }
                 }
-            });
+            );
     },
 });
 

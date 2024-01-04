@@ -1,30 +1,19 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
 import AddIcon from '../img/IconAdd.svg';
 import DeleteIcon from '../img/iconDel.svg';
 import { Box, TextField, Typography } from '@mui/material';
-import { styled } from '@mui/system';
-import { ItemComponentProps } from './TableComponent';
 import { useDispatch } from 'react-redux';
 import {
+    Row,
     addRowAsync,
     deleteRowAsync,
     toggleIsEdit,
     updateRowAsync,
 } from '../RTK/redusers/firstReduser';
-
-interface ItemMenuComponentProps extends Partial<ItemComponentProps> {
-    child: [] | ItemComponentProps[];
-    classEl: string;
-    isEddit?: boolean;
-    parentId: number;
-    idNum: number;
-    onAddRow: (obj: ItemComponentProps, parentId: number) => void;
-    onDeleteRow: (rowId: string) => void;
-    onUpdateRow: (rowId: string, obj: ItemComponentProps) => void;
-}
+import styled from '@emotion/styled';
 
 const AnimatedIconButton = styled(IconButton)(({ theme }) => ({
     color: 'white',
@@ -35,11 +24,9 @@ const AnimatedIconButton = styled(IconButton)(({ theme }) => ({
     },
 }));
 
-const RowComponent: React.FC<ItemMenuComponentProps> = ({
+const RowComponent: React.FC<Row> = ({
     parentId,
-    isEddit = false,
-    idNum,
-    classEl,
+    id,
     equipmentCosts,
     estimatedProfit,
     overheads,
@@ -49,7 +36,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
     const dispatch = useDispatch();
 
     const [isHovered, setIsHovered] = useState(false);
-    const [editedData, setEditedData] = useState<ItemComponentProps>({
+    const [editedData, setEditedData] = useState<Row>({
         equipmentCosts: equipmentCosts || 0,
         id: 0,
         total: 0,
@@ -80,7 +67,7 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
 
     const handleAddRow = () => {
         addRowAsync({
-            parentId: idNum,
+            parentId: id,
             row: {
                 equipmentCosts: 0,
                 id: 0,
@@ -94,17 +81,17 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
                 rowName: 'Новая строка', // Установите значение по умолчанию
                 salary: 0,
                 supportCosts: 0,
-                parentId: idNum,
+                parentId: id,
                 child: [],
             },
         });
     };
     const handleDeleteRow = () => {
-        deleteRowAsync(idNum);
+        deleteRowAsync(id);
     };
 
     const handleDoubleClick = () => {
-        dispatch(toggleIsEdit(idNum));
+        dispatch(toggleIsEdit(id));
     };
 
     const handleInputChange =
@@ -119,8 +106,8 @@ const RowComponent: React.FC<ItemMenuComponentProps> = ({
         if (e.key === 'Enter') {
             console.log('key down', e.key);
             // Отправить данные на сервер
-            updateRowAsync({ rowId: idNum, updatedRow: { ...editedData } });
-            dispatch(toggleIsEdit(idNum));
+            updateRowAsync({ rowId: id, updatedRow: { ...editedData } });
+            dispatch(toggleIsEdit(id));
         }
     };
     // const cls = () => {

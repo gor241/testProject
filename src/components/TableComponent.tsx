@@ -5,25 +5,16 @@ import TableBody from '@mui/material/TableBody';
 import TableRow from '@mui/material/TableRow';
 import RowComponent from './RowComponent';
 import { useSelector } from 'react-redux';
-import { selectRows } from '../RTK/redusers/firstReduser';
+import { Row, selectRows } from '../RTK/redusers/firstReduser';
 import TableCellComponent from './TableCellComponent';
 
-export interface ItemComponentProps {
-    equipmentCosts: number;
-    estimatedProfit: number;
-    machineOperatorSalary: number;
-    mainCosts: number;
-    materials: number;
-    mimExploitation: number;
-    overheads: number;
-    rowName: string;
-    salary: number;
-    supportCosts: number;
-    id: number;
-    total: number;
-    child: ItemComponentProps[];
-    parentId: number;
-}
+const RecursiveRow = ({ row }: { row: Row }) => (
+    <React.Fragment key={row.id}>
+        <RowComponent {...row} key={row.id} child={row.child} parentId={null} />
+        {!!row.child?.length &&
+            row.child.map((ch: Row) => <RecursiveRow key={ch.id} row={ch} />)}
+    </React.Fragment>
+);
 
 const TableComponent = () => {
     const rows = useSelector(selectRows);
@@ -41,29 +32,8 @@ const TableComponent = () => {
                 </TableRow>
             </TableHead>
             <TableBody>
-                {rows.map((row: any) => (
-                    <React.Fragment key={row.id}>
-                        <RowComponent
-                            {...row}
-                            classEl={row.classEl}
-                            key={row.id}
-                            idNum={row.id}
-                            child={row.child}
-                            isEddit={row.isEddit}
-                        />
-                        {!!row.child?.length &&
-                            row.child.map((ch: any) => (
-                                <RowComponent
-                                    {...ch}
-                                    classEl={ch.classEl}
-                                    key={ch.id}
-                                    idNum={ch.id}
-                                    child={ch.child}
-                                    isEddit={ch.isEddit}
-                                    parentId={row.id}
-                                />
-                            ))}
-                    </React.Fragment>
+                {rows.map((row: Row) => (
+                    <RecursiveRow key={row.id} row={row} />
                 ))}
             </TableBody>
         </Table>
