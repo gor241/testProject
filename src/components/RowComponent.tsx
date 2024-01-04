@@ -5,7 +5,6 @@ import IconButton from '@mui/material/IconButton';
 import AddIcon from '../img/IconAdd.svg';
 import DeleteIcon from '../img/iconDel.svg';
 import { Box, TextField, Typography } from '@mui/material';
-import { styled } from '@mui/system';
 import { ItemComponentProps } from './TableComponent';
 import { useDispatch } from 'react-redux';
 import {
@@ -14,6 +13,7 @@ import {
     toggleIsEdit,
     updateRowAsync,
 } from '../RTK/redusers/firstReduser';
+import styled from '@emotion/styled';
 
 interface ItemMenuComponentProps extends Partial<ItemComponentProps> {
     child: [] | ItemComponentProps[];

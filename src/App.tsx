@@ -1,4 +1,4 @@
-import { useEffect} from 'react';
+import { useEffect } from 'react';
 import './App.css';
 import { Context } from './context/context';
 import { Box } from '@mui/material';
@@ -19,7 +19,7 @@ function App() {
             .then((response) => response.json())
             .then((data) => dispatch(setRows(data)))
             .catch((error) => console.error('Error fetching rows:', error));
-    }, [dispatch]);
+    }, []);
 
     return (
         <Box
