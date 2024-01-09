@@ -121,6 +121,9 @@ const RowComponent: React.FC<Row> = ({
     //     return '';
     // };
 
+    let isEddit;
+    let classEl;
+
     return (
         <TableRow>
             <TableCell
